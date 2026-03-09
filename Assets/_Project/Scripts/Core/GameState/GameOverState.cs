@@ -12,7 +12,8 @@ public class GameOverState : IGameState
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            GameManager.Instance.StartLevel();
+            LevelManager.Instance.RestartCurrentLevel();
+            GameManager.Instance.StateMachine.ChangeState(new PlayingState());
         }
 
         if (Input.GetKeyDown(KeyCode.M))

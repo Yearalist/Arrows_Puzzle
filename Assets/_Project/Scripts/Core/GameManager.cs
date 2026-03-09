@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
 
     private void OnAllArrowsCleared(AllArrowsClearedEvent eventData)
     {
-        Debug.Log($"[GameManager] Level completed in {eventData.totalMoves} moves!");
+        Debug.Log("[GameManager] Level completed!");
         stateMachine.ChangeState(new LevelCompleteState());
     }
 
@@ -79,6 +79,7 @@ public class GameManager : MonoBehaviour
     public void StartLevel()
     {
         stateMachine.ChangeState(new PlayingState());
+        LevelManager.Instance.LoadCurrentLevel();
         Debug.Log("[GameManager] Level started!");
     }
 

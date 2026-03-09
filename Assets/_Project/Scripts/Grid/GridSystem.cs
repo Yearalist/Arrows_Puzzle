@@ -7,6 +7,14 @@ public class GridSystem : MonoBehaviour
     private int height;
     private float cellSize = 1.2f;
 
+    public int Width => width;
+    public int Height => height;
+
+    private int activeArrowCount;
+
+    public int ActiveArrowCount => activeArrowCount;
+
+
 
 
     public void CreateGrid(int gridWidth, int gridHeight)
@@ -50,6 +58,43 @@ public class GridSystem : MonoBehaviour
         Cell cell = cellObject.AddComponent<Cell>();
         cell.Initialize(x, y);
         cells[x, y] = cell;
+    }
+
+
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe<ArrowExitedEvent>(OnArrowExited);
+        EventBus.Subscribe<LevelStartedEvent>(OnLevelStarted);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe<ArrowExitedEvent>(OnArrowExited);
+        EventBus.Unsubscribe<LevelStartedEvent>(OnLevelStarted);
+    }
+
+    private void OnLevelStarted(LevelStartedEvent eventData)
+    {
+        // Count will be set by LevelLoader after placing arrows
+    }
+
+    private void OnArrowExited(ArrowExitedEvent eventData)
+    {
+        activeArrowCount--;
+        Debug.Log($"[GridSystem] Arrow exited. Remaining arrows: {activeArrowCount}");
+
+        if (activeArrowCount <= 0)
+        {
+            Debug.Log("[GridSystem] All arrows cleared!");
+            EventBus.Publish(new AllArrowsClearedEvent { totalMoves = 0 });
+        }
+    }
+
+    public void SetActiveArrowCount(int count)
+    {
+        activeArrowCount = count;
+        Debug.Log($"[GridSystem] Active arrow count set to: {activeArrowCount}");
     }
 
 

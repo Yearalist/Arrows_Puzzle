@@ -29,9 +29,14 @@ public class LevelLoader : MonoBehaviour
         Debug.Log($"[LevelLoader] Level {levelData.levelNumber} loaded successfully!");
     }
 
+    [SerializeField] private ArrowFactory arrowFactory;
 
     private void PlaceArrows(LevelData levelData)
     {
+        float offsetX = (levelData.gridWidth - 1) * 1.2f * 0.5f;
+        float offsetY = (levelData.gridHeight - 1) * 1.2f * 0.5f;
+        Vector2 gridOffset = new Vector2(offsetX, offsetY);
+
         foreach (ArrowData arrowData in levelData.arrows)
         {
             Cell cell = gridSystem.GetCell(arrowData.x, arrowData.y);
@@ -39,15 +44,23 @@ public class LevelLoader : MonoBehaviour
             if (cell != null)
             {
                 cell.SetOccupied(true);
-                CreateArrowVisual(arrowData, cell);
-                Debug.Log($"[LevelLoader] Placed {arrowData.direction} arrow at ({arrowData.x}, {arrowData.y})");
+                arrowFactory.CreateArrow(
+                    arrowData.x,
+                    arrowData.y,
+                    arrowData.direction,
+                    1.2f,
+                    gridOffset
+                );
             }
             else
             {
-                Debug.LogWarning($"[LevelLoader] Invalid position ({arrowData.x}, {arrowData.y}) for arrow!");
+                Debug.LogWarning($"[LevelLoader] Invalid position ({arrowData.x}, {arrowData.y})!");
             }
         }
+
+        gridSystem.SetActiveArrowCount(levelData.arrows.Length);
     }
+
 
 
     private void CreateArrowVisual(ArrowData arrowData, Cell cell)
