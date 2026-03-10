@@ -9,24 +9,39 @@ public class LevelLoader : MonoBehaviour
     {
         Debug.Log($"[LevelLoader] Loading Level {levelData.levelNumber}...");
 
-        // Step 1: Clear old grid if exists
+        // Step 1: Destroy old arrows
+        DestroyOldArrows();
+
+        // Step 2: Clear old grid if exists
         gridSystem.ClearGrid();
 
-        // Small delay for visual smoothness
         await UniTask.Delay(100);
 
-        // Step 2: Create grid
+        // Step 3: Create grid
         gridSystem.CreateGrid(levelData.gridWidth, levelData.gridHeight);
 
         await UniTask.Delay(100);
 
-        // Step 3: Place arrows on grid
+        // Step 4: Place arrows on grid
         PlaceArrows(levelData);
 
-        // Step 4: Notify that level is ready
+        // Step 5: Notify that level is ready
         EventBus.Publish(new LevelStartedEvent { levelNumber = levelData.levelNumber });
 
         Debug.Log($"[LevelLoader] Level {levelData.levelNumber} loaded successfully!");
+    }
+
+
+    private void DestroyOldArrows()
+    {
+        Arrow[] oldArrows = FindObjectsOfType<Arrow>(true);
+
+        foreach (Arrow arrow in oldArrows)
+        {
+            Destroy(arrow.gameObject);
+        }
+
+        Debug.Log($"[LevelLoader] Destroyed {oldArrows.Length} old arrows");
     }
 
     [SerializeField] private ArrowFactory arrowFactory;

@@ -67,6 +67,24 @@ public class GameManager : MonoBehaviour
     private void OnAllArrowsCleared(AllArrowsClearedEvent eventData)
     {
         Debug.Log("[GameManager] Level completed!");
+
+        ScoreSystem scoreSystem = FindObjectOfType<ScoreSystem>();
+        int stars = 1;
+        int score = 0;
+
+        if (scoreSystem != null)
+        {
+            stars = scoreSystem.CalculateStars(LevelManager.Instance.CurrentLevelData);
+            score = scoreSystem.CurrentScore;
+        }
+
+        EventBus.Publish(new LevelCompletedEvent
+        {
+            levelNumber = LevelManager.Instance.CurrentLevelIndex + 1,
+            stars = stars,
+            score = score
+        });
+
         stateMachine.ChangeState(new LevelCompleteState());
     }
 

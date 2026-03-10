@@ -15,7 +15,7 @@ MonoBehaviour:
   gridWidth: 5
   gridHeight: 5
   arrows:
-  - x: 0
+  - x: 2
     y: 2
     direction: 3
   - x: 4
