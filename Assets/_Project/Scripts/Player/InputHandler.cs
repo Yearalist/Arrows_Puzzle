@@ -46,12 +46,12 @@ public class InputHandler : MonoBehaviour
 
     private void OnArrowClicked(Arrow arrow)
     {
-        Debug.Log($"[InputHandler] Arrow clicked at ({arrow.GridX}, {arrow.GridY}) facing {arrow.Direction}");
+        Debug.Log($"[InputHandler] Arrow clicked at ({arrow.HeadX}, {arrow.HeadY}) facing {arrow.Direction}");
 
         EventBus.Publish(new ArrowClickedEvent
         {
-            gridX = arrow.GridX,
-            gridY = arrow.GridY
+            gridX = arrow.HeadX,
+            gridY = arrow.HeadY
         });
 
         ArrowMovement movement = arrow.GetComponent<ArrowMovement>();

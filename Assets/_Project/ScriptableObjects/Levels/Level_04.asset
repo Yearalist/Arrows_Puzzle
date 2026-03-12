@@ -15,24 +15,32 @@ MonoBehaviour:
   gridWidth: 5
   gridHeight: 5
   arrows:
-  - x: 2
-    y: 2
-    direction: 3
-  - x: 4
-    y: 2
+  - headX: 2
+    headY: 4
+    direction: 0
+    bodyParts:
+    - x: 2
+      y: 3
+    - x: 2
+      y: 2
+  - headX: 3
+    headY: 2
     direction: 2
-  - x: 2
-    y: 0
+    bodyParts:
+    - x: 4
+      y: 2
+  - headX: 1
+    headY: 1
     direction: 0
-  - x: 1
-    y: 1
+    bodyParts:
+    - x: 1
+      y: 0
+  - headX: 3
+    headY: 1
     direction: 0
-  - x: 3
-    y: 3
-    direction: 1
-  - x: 0
-    y: 0
-    direction: 0
+    bodyParts:
+    - x: 3
+      y: 0
   levelNumber: 4
   threeStarMoves: 6
   twoStarMoves: 9

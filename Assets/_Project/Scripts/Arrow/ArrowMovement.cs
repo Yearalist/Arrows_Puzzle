@@ -1,6 +1,8 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using System.Collections.Generic;
+
 public class ArrowMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 8f;
@@ -16,115 +18,139 @@ public class ArrowMovement : MonoBehaviour
 
     public async UniTask MoveArrow(GridSystem gridSystem)
     {
-        if (arrow == null || !arrow.IsActive || arrow.IsMoving)
-        {
-            return;
-        }
+        if (arrow == null || !arrow.IsActive || arrow.IsMoving) return;
 
         arrow.SetMoving(true);
         moveCancellation = new CancellationTokenSource();
+        Vector2Int dirVector = arrow.GetDirectionVector();
 
-        Vector2Int directionVector = arrow.GetDirectionVector();
-        int currentX = arrow.GridX;
-        int currentY = arrow.GridY;
-
-        Debug.Log($"[ArrowMovement] Arrow at ({currentX}, {currentY}) moving {arrow.Direction}");
-
-        // Clear the starting cell
-        Cell startCell = gridSystem.GetCell(currentX, currentY);
-        if (startCell != null)
-        {
-            startCell.SetOccupied(false);
-        }
-
-        bool collisionDetected = false;
+        ClearArrowCells(gridSystem);
 
         while (true)
         {
-            int nextX = currentX + directionVector.x;
-            int nextY = currentY + directionVector.y;
+            // GÜNCELLENDÝ: Yýlan mantýðýna göre bir sonraki pozisyonlar
+            List<Vector2Int> nextPositions = new List<Vector2Int>();
 
-            // Check if next position is outside grid = arrow escaped!
-            if (!gridSystem.IsInsideGrid(nextX, nextY))
+            // 0. Ýndeks (Baþ) yöne doðru gider
+            nextPositions.Add(new Vector2Int(arrow.AllOccupiedCells[0].x + dirVector.x, arrow.AllOccupiedCells[0].y + dirVector.y));
+
+            // Diðer parçalar bir öncekini takip eder
+            for (int i = 1; i < arrow.AllOccupiedCells.Count; i++)
             {
-                // Move to the edge and exit
-                Vector3 exitPosition = new Vector3(
-                    nextX * cellSize - (gridSystem.Width - 1) * cellSize * 0.5f,
-                    nextY * cellSize - (gridSystem.Height - 1) * cellSize * 0.5f,
-                    0f
-                );
-
-                await MoveToPosition(exitPosition, moveCancellation.Token);
-
-                // Arrow successfully exited
-                arrow.Deactivate();
-                EventBus.Publish(new ArrowExitedEvent
-                {
-                    gridX = currentX,
-                    gridY = currentY,
-                    pointsEarned = 10
-                });
-
-                Debug.Log($"[ArrowMovement] Arrow exited the grid!");
-                break;
+                nextPositions.Add(arrow.AllOccupiedCells[i - 1]);
             }
 
-            // Check if next cell is occupied = collision!
-            if (gridSystem.IsCellOccupied(nextX, nextY))
+            // Izgara dýþýna çýkma ve çarpýþma kontrolleri (Ayný kalýyor)
+            bool allOutside = true;
+            foreach (Vector2Int pos in nextPositions)
             {
-                collisionDetected = true;
+                if (gridSystem.IsInsideGrid(pos.x, pos.y)) { allOutside = false; break; }
+            }
 
-                // Mark current cell as occupied since arrow stops here
-                Cell stopCell = gridSystem.GetCell(currentX, currentY);
-                if (stopCell != null)
+            bool collision = false;
+            foreach (Vector2Int pos in nextPositions)
+            {
+                if (gridSystem.IsInsideGrid(pos.x, pos.y) && gridSystem.IsCellOccupied(pos.x, pos.y))
                 {
-                    stopCell.SetOccupied(true);
+                    collision = true;
+                    EventBus.Publish(new ArrowCollisionEvent { arrow1X = arrow.HeadX, arrow1Y = arrow.HeadY, arrow2X = pos.x, arrow2Y = pos.y });
+                    break;
                 }
+            }
 
-                EventBus.Publish(new ArrowCollisionEvent
-                {
-                    arrow1X = currentX,
-                    arrow1Y = currentY,
-                    arrow2X = nextX,
-                    arrow2Y = nextY
-                });
-
-                Debug.Log($"[ArrowMovement] Collision at ({nextX}, {nextY})! Arrow stopped at ({currentX}, {currentY})");
+            if (collision)
+            {
+                MarkArrowCells(gridSystem);
                 break;
             }
 
-            // Move to next cell
-            Vector3 targetPosition = new Vector3(
-                nextX * cellSize - (gridSystem.Width - 1) * cellSize * 0.5f,
-                nextY * cellSize - (gridSystem.Height - 1) * cellSize * 0.5f,
-                0f
-            );
+            // GÜNCELLENDÝ: Görsel hedefleri belirle
+            Vector3[] startVisualPositions = new Vector3[arrow.AllOccupiedCells.Count];
+            Vector3[] targetVisualPositions = new Vector3[arrow.AllOccupiedCells.Count];
 
-            await MoveToPosition(targetPosition, moveCancellation.Token);
+            for (int i = 0; i < arrow.AllOccupiedCells.Count; i++)
+            {
+                startVisualPositions[i] = arrow.lineRenderer.GetPosition(i);
+            }
 
-            currentX = nextX;
-            currentY = nextY;
-            arrow.SetGridPosition(currentX, currentY);
+            // Baþýn hedefi
+            targetVisualPositions[0] = startVisualPositions[0] + new Vector3(dirVector.x * cellSize, dirVector.y * cellSize, 0f);
+
+            // Gövdenin hedefi (önündeki parçanýn baþladýðý yer)
+            for (int i = 1; i < arrow.AllOccupiedCells.Count; i++)
+            {
+                targetVisualPositions[i] = startVisualPositions[i - 1];
+            }
+
+            // Parçalarý hareket ettir
+            await MoveStepPoints(startVisualPositions, targetVisualPositions, moveCancellation.Token);
+
+            // Mantýksal grid hücrelerini güncelle
+            arrow.MoveAllCells(dirVector);
+
+            // Tüm ok çýktý mý kontrolü
+            bool fullyExited = true;
+            foreach (Vector2Int cell in arrow.AllOccupiedCells)
+            {
+                if (gridSystem.IsInsideGrid(cell.x, cell.y)) { fullyExited = false; break; }
+            }
+
+            if (fullyExited)
+            {
+                arrow.Deactivate();
+                EventBus.Publish(new ArrowExitedEvent { gridX = arrow.HeadX, gridY = arrow.HeadY, pointsEarned = 10 });
+                break;
+            }
         }
 
         arrow.SetMoving(false);
     }
 
-
-    private async UniTask MoveToPosition(Vector3 target, CancellationToken token)
+    private void ClearArrowCells(GridSystem gridSystem)
     {
-        while (Vector3.Distance(transform.position, target) > 0.01f)
+        foreach (Vector2Int cell in arrow.AllOccupiedCells)
         {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                target,
-                moveSpeed * Time.deltaTime
-            );
+            Cell gridCell = gridSystem.GetCell(cell.x, cell.y);
+            if (gridCell != null) gridCell.SetOccupied(false);
+        }
+    }
+
+    private void MarkArrowCells(GridSystem gridSystem)
+    {
+        foreach (Vector2Int cell in arrow.AllOccupiedCells)
+        {
+            Cell gridCell = gridSystem.GetCell(cell.x, cell.y);
+            if (gridCell != null) gridCell.SetOccupied(true);
+        }
+    }
+
+    // YENÝ METOT: Parent'i kaydýrmak yerine LineRenderer ve Head objesini dünya koordinatlarýnda kaydýrýr
+    private async UniTask MoveStepPoints(Vector3[] startPos, Vector3[] targetPos, CancellationToken token)
+    {
+        float distance = Vector3.Distance(startPos[0], targetPos[0]);
+        if (distance <= 0) return;
+
+        float traveled = 0f;
+
+        while (traveled < distance)
+        {
+            float move = moveSpeed * Time.deltaTime;
+            traveled += move;
+            float t = Mathf.Clamp01(traveled / distance);
+
+            for (int i = 0; i < startPos.Length; i++)
+            {
+                Vector3 newPos = Vector3.Lerp(startPos[i], targetPos[i], t);
+                arrow.lineRenderer.SetPosition(i, newPos);
+
+                if (i == 0) // Baþ (Head) kýsmý
+                {
+                    arrow.headTransform.position = newPos;
+                }
+            }
 
             await UniTask.Yield(token);
         }
-
-        transform.position = target;
     }
 
     public void CancelMovement()
@@ -137,14 +163,5 @@ public class ArrowMovement : MonoBehaviour
         }
     }
 
-    private void OnDestroy()
-    {
-        CancelMovement();
-    }
+    private void OnDestroy() { CancelMovement(); }
 }
-
-
-
-
-
-

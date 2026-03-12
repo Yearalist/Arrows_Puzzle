@@ -23,9 +23,8 @@ public class ArrowCollision : MonoBehaviour
 
     private void OnCollision(ArrowCollisionEvent eventData)
     {
-        // Check if this arrow is involved in the collision
-        bool isArrow1 = eventData.arrow1X == arrow.GridX && eventData.arrow1Y == arrow.GridY;
-        bool isArrow2 = eventData.arrow2X == arrow.GridX && eventData.arrow2Y == arrow.GridY;
+        bool isArrow1 = eventData.arrow1X == arrow.HeadX && eventData.arrow1Y == arrow.HeadY;
+        bool isArrow2 = eventData.arrow2X == arrow.HeadX && eventData.arrow2Y == arrow.HeadY;
 
         if (isArrow1 || isArrow2)
         {
@@ -35,9 +34,8 @@ public class ArrowCollision : MonoBehaviour
 
     private void PlayCollisionEffect()
     {
-        Debug.Log($"[ArrowCollision] Arrow at ({arrow.GridX}, {arrow.GridY}) involved in collision!");
+        Debug.Log($"[ArrowCollision] Arrow at ({arrow.HeadX}, {arrow.HeadY}) involved in collision!");
 
-        // Flash red briefly
         if (spriteRenderer != null)
         {
             FlashRed().Forget();
