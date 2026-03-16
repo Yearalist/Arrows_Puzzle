@@ -12,29 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87ac7d84489e0954d8b84c57e76b06d9, type: 3}
   m_Name: Level_01
   m_EditorClassIdentifier: 
-  gridWidth: 4
-  gridHeight: 4
+  gridWidth: 6
+  gridHeight: 6
   arrows:
-  - headX: 2
-    headY: 2
+  - headX: 4
+    headY: 5
     direction: 3
     bodyParts:
+    - x: 3
+      y: 5
+    - x: 2
+      y: 5
+    - x: 1
+      y: 5
+    - x: 0
+      y: 5
+    - x: 0
+      y: 4
+    - x: 0
+      y: 3
+    - x: 1
+      y: 3
+    - x: 2
+      y: 3
+  - headX: 1
+    headY: 4
+    direction: 2
+    bodyParts:
+    - x: 2
+      y: 4
+    - x: 3
+      y: 4
+    - x: 4
+      y: 4
+    - x: 4
+      y: 3
+    - x: 4
+      y: 2
+    - x: 3
+      y: 2
+    - x: 2
+      y: 2
     - x: 1
       y: 2
-    - x: 0
-      y: 2
-    - x: 0
-      y: 1
-  - headX: 3
-    headY: 3
-    direction: 0
-    bodyParts:
-    - x: 3
-      y: 2
-    - x: 3
-      y: 1
-    - x: 3
-      y: 0
   levelNumber: 1
-  threeStarMoves: 3
-  twoStarMoves: 5
+  threeStarMoves: 5
+  twoStarMoves: 8

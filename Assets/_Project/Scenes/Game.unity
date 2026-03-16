@@ -602,6 +602,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16c50d8691f4ee24095c6a5615881c5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cellSize: 1.2
 --- !u!4 &265090111
 Transform:
   m_ObjectHideFlags: 0
