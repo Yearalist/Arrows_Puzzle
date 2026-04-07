@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 public class ArrowFactory : MonoBehaviour
 {
+
+   
+    [SerializeField] private Sprite arrowHeadSprite;
     [SerializeField] private float cellSize = 1.2f;
 
     public float CellSize => cellSize;
@@ -58,8 +61,10 @@ public class ArrowFactory : MonoBehaviour
         if (path.Count < 2) return;
 
         LineRenderer line = parent.AddComponent<LineRenderer>();
-        line.startWidth = cellSize * 0.15f;
-        line.endWidth = cellSize * 0.15f;
+        line.startWidth = cellSize * 0.22f;
+        line.endWidth = cellSize * 0.22f;
+        line.numCapVertices = 5;
+        line.numCornerVertices = 5;
         line.positionCount = path.Count;
         line.useWorldSpace = true; // DEÐÝÞTÝ: Artýk baðýmsýz hareket etmesi için Dünya Alanýný kullanýyor
         line.sortingOrder = 1;
@@ -83,20 +88,20 @@ public class ArrowFactory : MonoBehaviour
     {
         GameObject headObj = new GameObject("Head");
         headObj.transform.parent = parent.transform;
-
-        // DEÐÝÞTÝ: Gerçek dünya pozisyonunu ata
-        headObj.transform.position = GetWorldPosition(arrowData.headX, arrowData.headY, gridOffset);
+        headObj.transform.localPosition = Vector3.zero;
 
         SpriteRenderer renderer = headObj.AddComponent<SpriteRenderer>();
-        renderer.sprite = CreateHeadSprite();
+        renderer.sprite = arrowHeadSprite;
         renderer.color = new Color(0.12f, 0.12f, 0.18f);
         renderer.sortingOrder = 2;
 
-        float headSize = cellSize * 0.5f;
+        float headSize = cellSize * 0.6f;
         headObj.transform.localScale = Vector3.one * headSize;
-        headObj.transform.rotation = Quaternion.Euler(0f, 0f, GetRotation(arrowData.direction));
 
-        // Arrow referansýna baðla
+        float rotation = GetRotation(arrowData.direction);
+        headObj.transform.rotation = Quaternion.Euler(0f, 0f, rotation);
+
+      
         parent.GetComponent<Arrow>().headTransform = headObj.transform;
     }
 
@@ -153,37 +158,5 @@ public class ArrowFactory : MonoBehaviour
         }
     }
 
-    private Sprite CreateHeadSprite()
-    {
-        int size = 32;
-        Texture2D texture = new Texture2D(size, size);
-        Color[] colors = new Color[size * size];
-
-        for (int i = 0; i < colors.Length; i++)
-        {
-            colors[i] = Color.clear;
-        }
-
-        // Draw arrow head pointing up
-        for (int y = 0; y < size; y++)
-        {
-            int invertedY = size - 1 - y;
-            int halfWidth = invertedY / 2;
-            int center = size / 2;
-
-            for (int x = center - halfWidth; x <= center + halfWidth; x++)
-            {
-                if (x >= 0 && x < size)
-                {
-                    colors[y * size + x] = Color.white;
-                }
-            }
-        }
-
-        texture.SetPixels(colors);
-        texture.Apply();
-        texture.filterMode = FilterMode.Point;
-
-        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
-    }
+   
 }

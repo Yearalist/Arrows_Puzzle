@@ -124,11 +124,12 @@ public class ArrowMovement : MonoBehaviour
         }
     }
 
-    // YENÝ METOT: Parent'i kaydýrmak yerine LineRenderer ve Head objesini dünya koordinatlarýnda kaydýrýr
     private async UniTask MoveStepPoints(Vector3[] startPos, Vector3[] targetPos, CancellationToken token)
     {
+        if (arrow.lineRenderer == null) return;
+
         float distance = Vector3.Distance(startPos[0], targetPos[0]);
-        if (distance <= 0) return;
+        if (distance <= 0.001f) return;
 
         float traveled = 0f;
 
@@ -141,15 +142,33 @@ public class ArrowMovement : MonoBehaviour
             for (int i = 0; i < startPos.Length; i++)
             {
                 Vector3 newPos = Vector3.Lerp(startPos[i], targetPos[i], t);
-                arrow.lineRenderer.SetPosition(i, newPos);
 
-                if (i == 0) // Baþ (Head) kýsmý
+                if (i < arrow.lineRenderer.positionCount)
+                {
+                    arrow.lineRenderer.SetPosition(i, newPos);
+                }
+
+                if (i == 0 && arrow.headTransform != null)
                 {
                     arrow.headTransform.position = newPos;
                 }
             }
 
             await UniTask.Yield(token);
+        }
+
+        // Final pozisyonlarý tam olarak ata
+        for (int i = 0; i < targetPos.Length; i++)
+        {
+            if (i < arrow.lineRenderer.positionCount)
+            {
+                arrow.lineRenderer.SetPosition(i, targetPos[i]);
+            }
+
+            if (i == 0 && arrow.headTransform != null)
+            {
+                arrow.headTransform.position = targetPos[i];
+            }
         }
     }
 

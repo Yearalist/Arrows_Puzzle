@@ -23,7 +23,6 @@ public class GridSystem : MonoBehaviour
         height = gridHeight;
         cells = new Cell[width, height];
 
-        // Center the grid on screen
         float offsetX = (width - 1) * cellSize * 0.5f;
         float offsetY = (height - 1) * cellSize * 0.5f;
 
@@ -35,7 +34,31 @@ public class GridSystem : MonoBehaviour
             }
         }
 
+        // Kamerayý grid'e sýðdýr
+        FitCameraToGrid();
+
         Debug.Log($"[GridSystem] Grid created: {width}x{height} ({width * height} cells)");
+    }
+
+    private void FitCameraToGrid()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        float gridWorldWidth = width * cellSize;
+        float gridWorldHeight = height * cellSize;
+
+        // Kamera aspect ratio
+        float screenAspect = cam.aspect;
+
+        // Dikey ve yatay için gereken kamera boyutu
+        float verticalSize = (gridWorldHeight * 0.5f) + 1.5f;
+        float horizontalSize = ((gridWorldWidth * 0.5f) / screenAspect) + 1.5f;
+
+        // Büyük olaný seç
+        cam.orthographicSize = Mathf.Max(verticalSize, horizontalSize);
+
+        Debug.Log($"[GridSystem] Camera size adjusted to: {cam.orthographicSize} (aspect: {screenAspect})");
     }
 
 

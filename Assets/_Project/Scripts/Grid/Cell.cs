@@ -37,14 +37,13 @@ public class Cell : MonoBehaviour
     {
         if (spriteRenderer != null)
         {
-            // Checkerboard pattern like a chess board
+            // Very subtle grid - almost invisible
             bool isLight = (gridX + gridY) % 2 == 0;
             spriteRenderer.color = isLight
-                ? new Color(0.9f, 0.9f, 0.95f)
-                : new Color(0.8f, 0.8f, 0.88f);
+                ? new Color(0.94f, 0.94f, 0.96f, 1f)
+                : new Color(0.91f, 0.91f, 0.93f, 1f);
         }
     }
-
 
 
     public void SetOccupied(bool occupied)

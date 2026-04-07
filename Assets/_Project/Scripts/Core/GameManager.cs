@@ -1,12 +1,9 @@
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.InputSystem.LowLevel;
+
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
-
     private GameStateMachine stateMachine;
-
     public GameStateMachine StateMachine => stateMachine;
 
     public static GameManager Instance
@@ -32,25 +29,25 @@ public class GameManager : MonoBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
-
         InitializeSystems();
-
         Debug.Log("[GameManager] Initialized successfully!");
     }
-
-
 
     private void InitializeSystems()
     {
         stateMachine = new GameStateMachine();
-        stateMachine.ChangeState(new MenuState());
+        stateMachine.ChangeState(new PlayingState());
+    }
+
+    private void Start()
+    {
+        LevelManager.Instance.LoadCurrentLevel();
     }
 
     private void Update()
     {
         stateMachine.Update();
     }
-
 
     private void OnEnable()
     {
@@ -78,9 +75,12 @@ public class GameManager : MonoBehaviour
             score = scoreSystem.CurrentScore;
         }
 
+        int levelNum = LevelManager.Instance.CurrentLevelIndex + 1;
+        LevelProgress.SaveLevelResult(levelNum, stars);
+
         EventBus.Publish(new LevelCompletedEvent
         {
-            levelNumber = LevelManager.Instance.CurrentLevelIndex + 1,
+            levelNumber = levelNum,
             stars = stars,
             score = score
         });
