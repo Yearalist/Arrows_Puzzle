@@ -75,6 +75,7 @@ public class GameManager : MonoBehaviour
             score = scoreSystem.CurrentScore;
         }
 
+        // Save progress
         int levelNum = LevelManager.Instance.CurrentLevelIndex + 1;
         LevelProgress.SaveLevelResult(levelNum, stars);
 

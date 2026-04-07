@@ -37,8 +37,10 @@ public class LevelManager : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(gameObject);
 
-        currentLevelIndex = 0;
-        Debug.Log($"[LevelManager] Initialized with {allLevels.Length} levels");
+        // Read selected level from PlayerPrefs
+        currentLevelIndex = PlayerPrefs.GetInt("SelectedLevel", 0);
+
+        Debug.Log($"[LevelManager] Initialized with {allLevels.Length} levels. Starting at index {currentLevelIndex}");
     }
 
 
