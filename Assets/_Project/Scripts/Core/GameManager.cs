@@ -39,27 +39,39 @@ public class GameManager : MonoBehaviour
         stateMachine.ChangeState(new PlayingState());
     }
 
-    private void Start()
-    {
-        LevelManager.Instance.LoadCurrentLevel();
-    }
+   
 
     private void Update()
     {
         stateMachine.Update();
     }
 
+
     private void OnEnable()
     {
         EventBus.Subscribe<AllArrowsClearedEvent>(OnAllArrowsCleared);
         EventBus.Subscribe<LivesExhaustedEvent>(OnLivesExhausted);
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe<AllArrowsClearedEvent>(OnAllArrowsCleared);
         EventBus.Unsubscribe<LivesExhaustedEvent>(OnLivesExhausted);
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
     }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (scene.name == "Game")
+        {
+            stateMachine.ChangeState(new PlayingState());
+            LevelManager.Instance.LoadCurrentLevel();
+            Debug.Log("[GameManager] Game scene loaded, starting level!");
+        }
+    }
+
+
 
     private void OnAllArrowsCleared(AllArrowsClearedEvent eventData)
     {

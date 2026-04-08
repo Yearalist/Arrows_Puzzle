@@ -88,6 +88,12 @@ public class LevelCompletePanel : MonoBehaviour
     private void OnNextClicked()
     {
         HidePanel();
+
+        // Sonraki seviye indeksini kaydet
+        int nextIndex = LevelManager.Instance.CurrentLevelIndex + 1;
+        PlayerPrefs.SetInt("SelectedLevel", nextIndex);
+        PlayerPrefs.Save();
+
         LevelManager.Instance.LoadNextLevel();
         GameManager.Instance.StateMachine.ChangeState(new PlayingState());
     }
@@ -102,6 +108,6 @@ public class LevelCompletePanel : MonoBehaviour
     private void OnMenuClicked()
     {
         HidePanel();
-        GameManager.Instance.GoToMenu();
+        UnityEngine.SceneManagement.SceneManager.LoadScene("LevelSelect");
     }
 }

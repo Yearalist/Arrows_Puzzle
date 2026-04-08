@@ -73,6 +73,6 @@ public class GameOverPanel : MonoBehaviour
     private void OnMenuClicked()
     {
         HidePanel();
-        GameManager.Instance.GoToMenu();
+        UnityEngine.SceneManagement.SceneManager.LoadScene("LevelSelect");
     }
 }

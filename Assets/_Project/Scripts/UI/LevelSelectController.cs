@@ -7,15 +7,30 @@ public class LevelSelectController : MonoBehaviour
 {
     [SerializeField] private Transform contentParent;
     [SerializeField] private GameObject levelButtonPrefab;
+    [SerializeField] private Button backButton;
     [SerializeField] private int totalLevels = 50;
+    [SerializeField] private Sprite starFilledSprite;
+    [SerializeField] private Sprite starEmptySprite;
+    [SerializeField] private Sprite lockSprite;
 
     private void Start()
     {
         CreateLevelButtons();
+
+        if (backButton != null)
+        {
+            backButton.onClick.AddListener(OnBackClicked);
+        }
     }
 
     private void CreateLevelButtons()
     {
+        // Eski butonları temizle
+        foreach (Transform child in contentParent)
+        {
+            Destroy(child.gameObject);
+        }
+
         for (int i = 1; i <= totalLevels; i++)
         {
             CreateLevelButton(i);
@@ -27,50 +42,66 @@ public class LevelSelectController : MonoBehaviour
         GameObject buttonObj = Instantiate(levelButtonPrefab, contentParent);
         buttonObj.name = $"Level_{levelNumber}";
 
-        // Get components
         Button button = buttonObj.GetComponent<Button>();
         TextMeshProUGUI levelText = buttonObj.transform.Find("LevelText").GetComponent<TextMeshProUGUI>();
-        TextMeshProUGUI starsText = buttonObj.transform.Find("StarsText").GetComponent<TextMeshProUGUI>();
         Image bgImage = buttonObj.GetComponent<Image>();
 
-        // Set level number
-        levelText.text = levelNumber.ToString();
-
-        // Check if unlocked
         bool isUnlocked = LevelProgress.IsLevelUnlocked(levelNumber);
         int stars = LevelProgress.GetLevelStars(levelNumber);
 
         if (isUnlocked)
         {
-            // Unlocked - show stars
             bgImage.color = Color.white;
             button.interactable = true;
+            levelText.text = levelNumber.ToString();
+            levelText.color = new Color(0.12f, 0.12f, 0.18f);
 
-            string starDisplay = "";
-            for (int i = 0; i < 3; i++)
+            // Yıldızları güncelle
+            Transform starsContainer = buttonObj.transform.Find("StarsContainer");
+            if (starsContainer != null)
             {
-                starDisplay += i < stars ? "★" : "☆";
+                Image[] starImages = starsContainer.GetComponentsInChildren<Image>();
+                for (int i = 0; i < starImages.Length && i < 3; i++)
+                {
+                    if (i < stars)
+                    {
+                        starImages[i].sprite = starFilledSprite;
+                        starImages[i].color = new Color(1f, 0.72f, 0f);
+                    }
+                    else
+                    {
+                        starImages[i].sprite = starEmptySprite;
+                        starImages[i].color = new Color(0.75f, 0.75f, 0.75f);
+                    }
+                }
             }
-            starsText.text = starDisplay;
-            starsText.color = stars > 0 ? new Color(0.9f, 0.75f, 0.2f) : new Color(0.7f, 0.7f, 0.7f);
 
             int capturedLevel = levelNumber;
             button.onClick.AddListener(() => OnLevelSelected(capturedLevel));
         }
         else
         {
-            // Locked
-            bgImage.color = new Color(0.85f, 0.85f, 0.88f);
+            bgImage.color = new Color(0.88f, 0.88f, 0.9f);
             button.interactable = false;
+            levelText.text = "";
+
+            // Kilit ikonu göster
+            Transform starsContainer = buttonObj.transform.Find("StarsContainer");
+            if (starsContainer != null)
+            {
+                starsContainer.gameObject.SetActive(false);
+            }
+
+            // Level numarası yerine kilit göster
+            levelText.text = "?";
             levelText.color = new Color(0.6f, 0.6f, 0.65f);
-            starsText.text = "🔒";
         }
     }
 
     private void OnLevelSelected(int levelNumber)
     {
-        // Store selected level for Game scene to read
         PlayerPrefs.SetInt("SelectedLevel", levelNumber - 1);
+        PlayerPrefs.Save();
         SceneManager.LoadScene("Game");
     }
 

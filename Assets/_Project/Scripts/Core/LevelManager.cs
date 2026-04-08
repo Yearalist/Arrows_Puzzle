@@ -37,15 +37,16 @@ public class LevelManager : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Read selected level from PlayerPrefs
         currentLevelIndex = PlayerPrefs.GetInt("SelectedLevel", 0);
 
         Debug.Log($"[LevelManager] Initialized with {allLevels.Length} levels. Starting at index {currentLevelIndex}");
     }
 
-
     public void LoadCurrentLevel()
     {
+        // Her seferinde güncel seçimi oku
+        currentLevelIndex = PlayerPrefs.GetInt("SelectedLevel", 0);
+
         if (currentLevelIndex < allLevels.Length)
         {
             levelLoader.LoadLevel(allLevels[currentLevelIndex]).Forget();
@@ -60,6 +61,8 @@ public class LevelManager : MonoBehaviour
     public void LoadNextLevel()
     {
         currentLevelIndex++;
+        PlayerPrefs.SetInt("SelectedLevel", currentLevelIndex);
+        PlayerPrefs.Save();
 
         if (currentLevelIndex < allLevels.Length)
         {
@@ -67,8 +70,7 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[LevelManager] No more levels! You finished the game!");
-            currentLevelIndex = allLevels.Length - 1;
+            Debug.Log("[LevelManager] No more levels! Game complete!");
         }
     }
 

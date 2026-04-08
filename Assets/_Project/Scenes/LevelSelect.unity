@@ -1326,7 +1326,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   contentParent: {fileID: 1993609285}
   levelButtonPrefab: {fileID: 4781786057629717416, guid: 8f8a5db4c6d95494c97631b2fb7808a0, type: 3}
+  backButton: {fileID: 592109120}
   totalLevels: 5
+  starFilledSprite: {fileID: 21300000, guid: d0175e019ddcdbe4e995a0c4d01608ab, type: 3}
+  starEmptySprite: {fileID: 21300000, guid: 51c640b040b9ca34e94d67b1e42ab9db, type: 3}
+  lockSprite: {fileID: 21300000, guid: e01c93b51007a784a82ce4a11126369a, type: 3}
 --- !u!4 &1623327089
 Transform:
   m_ObjectHideFlags: 0
