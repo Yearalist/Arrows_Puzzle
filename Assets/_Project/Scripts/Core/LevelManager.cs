@@ -44,12 +44,20 @@ public class LevelManager : MonoBehaviour
 
     public void LoadCurrentLevel()
     {
-        // Her seferinde güncel seçimi oku
         currentLevelIndex = PlayerPrefs.GetInt("SelectedLevel", 0);
+
+        // Her seferinde sahnedeki güncel LevelLoader'ý bul
+        LevelLoader loader = FindObjectOfType<LevelLoader>();
+
+        if (loader == null)
+        {
+            Debug.LogError("[LevelManager] LevelLoader not found in scene!");
+            return;
+        }
 
         if (currentLevelIndex < allLevels.Length)
         {
-            levelLoader.LoadLevel(allLevels[currentLevelIndex]).Forget();
+            loader.LoadLevel(allLevels[currentLevelIndex]).Forget();
             Debug.Log($"[LevelManager] Loading level {currentLevelIndex + 1}");
         }
         else

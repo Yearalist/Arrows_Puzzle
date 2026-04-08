@@ -73,9 +73,9 @@ public class ArrowMovement : MonoBehaviour
                 startVisualPositions[i] = arrow.lineRenderer.GetPosition(i);
             }
 
+         
             // Baþýn hedefi
             targetVisualPositions[0] = startVisualPositions[0] + new Vector3(dirVector.x * cellSize, dirVector.y * cellSize, 0f);
-
             // Gövdenin hedefi (önündeki parçanýn baþladýðý yer)
             for (int i = 1; i < arrow.AllOccupiedCells.Count; i++)
             {
@@ -106,6 +106,24 @@ public class ArrowMovement : MonoBehaviour
         arrow.SetMoving(false);
     }
 
+
+
+
+
+    private Vector3 GetHeadBackOffset(ArrowDirection direction)
+    {
+        float offset = 1.2f * 0.35f;
+
+        switch (direction)
+        {
+            case ArrowDirection.Up: return new Vector3(0f, -offset, 0f);
+            case ArrowDirection.Down: return new Vector3(0f, offset, 0f);
+            case ArrowDirection.Left: return new Vector3(offset, 0f, 0f);
+            case ArrowDirection.Right: return new Vector3(-offset, 0f, 0f);
+            default: return Vector3.zero;
+        }
+    }
+
     private void ClearArrowCells(GridSystem gridSystem)
     {
         foreach (Vector2Int cell in arrow.AllOccupiedCells)
@@ -131,6 +149,11 @@ public class ArrowMovement : MonoBehaviour
         float distance = Vector3.Distance(startPos[0], targetPos[0]);
         if (distance <= 0.001f) return;
 
+        // Head sprite'ýn gerçek pozisyonunu hesapla (offset'siz)
+        Vector3 headBackOffset = GetHeadBackOffset(arrow.Direction);
+        Vector3 headSpriteStart = startPos[0] - headBackOffset;
+        Vector3 headSpriteTarget = targetPos[0] - headBackOffset;
+
         float traveled = 0f;
 
         while (traveled < distance)
@@ -147,28 +170,29 @@ public class ArrowMovement : MonoBehaviour
                 {
                     arrow.lineRenderer.SetPosition(i, newPos);
                 }
+            }
 
-                if (i == 0 && arrow.headTransform != null)
-                {
-                    arrow.headTransform.position = newPos;
-                }
+            // Head sprite offset'siz hareket etsin
+            if (arrow.headTransform != null)
+            {
+                arrow.headTransform.position = Vector3.Lerp(headSpriteStart, headSpriteTarget, t);
             }
 
             await UniTask.Yield(token);
         }
 
-        // Final pozisyonlarý tam olarak ata
+        // Final pozisyonlar
         for (int i = 0; i < targetPos.Length; i++)
         {
             if (i < arrow.lineRenderer.positionCount)
             {
                 arrow.lineRenderer.SetPosition(i, targetPos[i]);
             }
+        }
 
-            if (i == 0 && arrow.headTransform != null)
-            {
-                arrow.headTransform.position = targetPos[i];
-            }
+        if (arrow.headTransform != null)
+        {
+            arrow.headTransform.position = headSpriteTarget;
         }
     }
 

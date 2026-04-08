@@ -7,6 +7,7 @@ public class ArrowFactory : MonoBehaviour
    
     [SerializeField] private Sprite arrowHeadSprite;
     [SerializeField] private float cellSize = 1.2f;
+    private Color arrowColor = new Color(0.12f, 0.12f, 0.18f);
 
     public float CellSize => cellSize;
 
@@ -66,22 +67,44 @@ public class ArrowFactory : MonoBehaviour
         line.numCapVertices = 5;
         line.numCornerVertices = 5;
         line.positionCount = path.Count;
-        line.useWorldSpace = true; // DEÐÝÞTÝ: Artýk baðýmsýz hareket etmesi için Dünya Alanýný kullanýyor
+        line.useWorldSpace = true;
         line.sortingOrder = 1;
 
         line.material = new Material(Shader.Find("Sprites/Default"));
-        line.startColor = new Color(0.12f, 0.12f, 0.18f);
-        line.endColor = new Color(0.12f, 0.12f, 0.18f);
+        line.startColor = arrowColor;
+        line.endColor = arrowColor;
+
+        // Kafanýn arka kenarý offset'i hesapla
+        Vector3 headOffset = GetHeadBackOffset(arrowData.direction);
 
         for (int i = 0; i < path.Count; i++)
         {
-            // DEÐÝÞTÝ: Gerçek dünya pozisyonlarýný hesaplayýp atýyoruz
             Vector3 worldPos = GetWorldPosition(path[i].x, path[i].y, gridOffset);
+
+            // Ýlk nokta (baþ) için offset uygula — gövde kafanýn arkasýndan baþlasýn
+            if (i == 0)
+            {
+                worldPos += headOffset;
+            }
+
             line.SetPosition(i, worldPos);
         }
 
-        // Arrow referansýna baðla
         parent.GetComponent<Arrow>().lineRenderer = line;
+    }
+
+    private Vector3 GetHeadBackOffset(ArrowDirection direction)
+    {
+        float offset = cellSize * 0.35f;
+
+        switch (direction)
+        {
+            case ArrowDirection.Up: return new Vector3(0f, -offset, 0f);
+            case ArrowDirection.Down: return new Vector3(0f, offset, 0f);
+            case ArrowDirection.Left: return new Vector3(offset, 0f, 0f);
+            case ArrowDirection.Right: return new Vector3(-offset, 0f, 0f);
+            default: return Vector3.zero;
+        }
     }
 
     private void CreateHeadVisual(GameObject parent, ArrowData arrowData, Vector2 gridOffset)
@@ -94,6 +117,7 @@ public class ArrowFactory : MonoBehaviour
         renderer.sprite = arrowHeadSprite;
         renderer.color = new Color(0.12f, 0.12f, 0.18f);
         renderer.sortingOrder = 2;
+        renderer.color = arrowColor;
 
         float headSize = cellSize * 0.6f;
         headObj.transform.localScale = Vector3.one * headSize;

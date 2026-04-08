@@ -31,16 +31,34 @@ public class InputHandler : MonoBehaviour
         Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 mousePosition2D = new Vector2(mouseWorldPosition.x, mouseWorldPosition.y);
 
-        RaycastHit2D hit = Physics2D.Raycast(mousePosition2D, Vector2.zero);
+        // Tek bir hit yerine tüm hit'leri al
+        RaycastHit2D[] hits = Physics2D.RaycastAll(mousePosition2D, Vector2.zero);
 
-        if (hit.collider != null)
+        Arrow closestArrow = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (RaycastHit2D hit in hits)
         {
-            Arrow arrow = hit.collider.GetComponent<Arrow>();
-
-            if (arrow != null && arrow.IsActive && !arrow.IsMoving)
+            if (hit.collider != null)
             {
-                OnArrowClicked(arrow);
+                Arrow arrow = hit.collider.GetComponent<Arrow>();
+
+                if (arrow != null && arrow.IsActive && !arrow.IsMoving)
+                {
+                    // Týklanan noktaya en yakýn oku bul
+                    float dist = Vector2.Distance(mousePosition2D, hit.point);
+                    if (dist < closestDistance)
+                    {
+                        closestDistance = dist;
+                        closestArrow = arrow;
+                    }
+                }
             }
+        }
+
+        if (closestArrow != null)
+        {
+            OnArrowClicked(closestArrow);
         }
     }
 
